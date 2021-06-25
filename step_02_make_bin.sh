@@ -1,0 +1,1 @@
+ python scripts/make_filtered_genomic_bin.py input/genome_fasta/hg19/chromInfo.txt 5000 0 input/black_list/hg19/gap.bed.gz input/black_list/hg19/blacklist.bed.gz Features/Label/hg19/filtered_bin.bed.gz
