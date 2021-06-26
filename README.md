@@ -11,11 +11,16 @@ creating features for DeepLUCIA ( https://github.com/bcbl-kaist/DeepLUCIA )
   - If you have your own data, you can follow the guide from Roadmap Epigenomics ( https://egg2.wustl.edu/roadmap/web_portal/processed_data.html )
 - chromatin loops file in bedpe format.
 
+# Parameters
+- The length of genomic region to test ( DeepLUCIA used 5kb for default )
+- The length of overlap between regions ( DeepLUCIA used 0bp for default )
+- The resolution of epigenomic feature ( DeepLUCIA used 25bp for default )
+
 # Output files
 - putativa anchor annotations. 
 - genomic loop annotations.
 - One-hot encoded genomic feature npy file
-- 25bp-Binned epigenomic feature npy file.
+- 25bp-resolution epigenomic feature npy file.
 
 # Dependencies
 - pybedtools>=0.8.0 ( https://github.com/daler/pybedtools )
