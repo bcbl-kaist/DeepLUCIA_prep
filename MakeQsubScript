@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+import os
+import sys # for sys.argv
+
+from collections import defaultdict
+
+import math
+import os.path
+
+
+if len(sys.argv) < 6:
+	print ("Usage : " + sys.argv[0] + " [Shell script to split] [Type of node] [# of processor per node]  [# of qsub file] [Queue type ]")
+	print ("Usage : " + sys.argv[0] + " RunVina.sh 7 X  4 long")
+	print ("Usage : " + sys.argv[0] + " RunVina.sh n aa 4 long")
+	sys.exit()
+
+NumberOfNode = 1
+BashFileName = sys.argv[1]
+
+BashCommandList = []
+BashFile = open(BashFileName)
+for rawline in BashFile:
+	if not rawline.startswith("#") and len(rawline.strip()) > 0 :
+		BashCommandList.append(rawline)
+BashFile.close()
+
+NumberOfQsubScript = len(BashCommandList) if sys.argv[2] is "n" else int(sys.argv[2])
+TypeOfNode = sys.argv[3]
+ProcessorPerNode = int(sys.argv[4])
+QueueType = sys.argv[5]
+
+QsubIDToCommandSubListMap = defaultdict(list)
+for i , Command in enumerate(BashCommandList):
+	i = i%NumberOfQsubScript
+	QsubID = str(i + 1).zfill(int(math.ceil(math.log10(NumberOfQsubScript+1))))
+	QsubIDToCommandSubListMap[QsubID].append(Command)
+
+for i in range(NumberOfQsubScript):
+
+	QsubID = str(i + 1).zfill(int(math.ceil(math.log10(NumberOfQsubScript+1))))
+	CommandSubList = QsubIDToCommandSubListMap[QsubID]
+
+	QsubFileName = os.path.abspath(BashFileName + "." + QsubID + ".pbs")
+	ErrFileName  = os.path.abspath(BashFileName + "." + QsubID + ".pbs.err")
+	LogFileName  = os.path.abspath(BashFileName + "." + QsubID + ".pbs.log")
+	JobName      =                 BashFileName + "_" + QsubID
+
+	QsubFile = open(QsubFileName,"w")
+	QsubFile.write("#!/bin/sh\n")
+	QsubFile.write("#PBS -N " + JobName + "\n")
+	QsubFile.write("#PBS -l nodes=" + str(NumberOfNode) + ":ppn=" + str(ProcessorPerNode) + "\n")
+	QsubFile.write("#PBS -e " + ErrFileName + "\n")
+	QsubFile.write("#PBS -o " + LogFileName + "\n")
+
+	QsubFile.write("cd $PBS_O_WORKDIR\n")
+	QsubFile.write("echo `cat $PBS_NODEFILE`\n\n")
+
+	for Command in CommandSubList:
+		QsubFile.write(Command)
+
+	QsubFile.write("\nsleep 30\n")
+	QsubFile.write("\nexit 0\n")
+
+	QsubFile.close()
